@@ -1,1 +1,1 @@
-# Machine-Learning-Yu-Gi-Oh
+# Character-Based-RNN
