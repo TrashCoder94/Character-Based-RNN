@@ -70,3 +70,21 @@ void RecurrentNeuralNetwork::SaveSequences()
 		sequenceFile.close();
 	}
 }
+
+void RecurrentNeuralNetwork::CreateDictionary()
+{
+	int characterIndex = 0;
+
+	for (char character : inputString)
+	{
+		// If we have already stored this character in our dictionary
+		// Continue on to the next character.
+		if (dictionary.find(character) != dictionary.end())
+			continue;
+
+		dictionary.emplace(character, characterIndex);
+		++characterIndex;
+	}
+
+	std::cout << "Vocab size " << dictionary.size() << std::endl;
+}

@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 
 	// Train our network now.
 	rnn.ReadFile(sequenceFilepath);
-
+	rnn.CreateDictionary();
 
 	return 0;
 }

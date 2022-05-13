@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <map>
 
 namespace fs = std::filesystem;
 
@@ -13,8 +14,11 @@ class RecurrentNeuralNetwork
 		void ReadFile(const fs::path file);
 		void CreateSequences(bool addNewLineAfterEverySequence = false);
 		void SaveSequences();
+		void CreateDictionary();
 
 	private:
+		std::map<char, int> dictionary;
+
 		fs::path inputFilepath;
 		fs::path outputFilepath;
 		fs::path sequenceFilepath;
