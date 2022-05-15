@@ -60,12 +60,14 @@ void NeuralNetwork::Init()
 			m_hiddenLayers.push_back(hiddenLayer);
 
 			// Only clear this vector if we have another hidden layer to move to
-			if(iHL != m_numberOfHiddenLayers)
+			if(iHL != m_numberOfHiddenLayers - 1)
 				previousHiddenLayerWeights.clear();
 		}
 	}
 
 	// OUTPUT LAYER
+	OutputLayer ol{ 5, previousHiddenLayerWeights };
+	m_outputLayer = ol;
 	m_outputLayer.InitLayer();
 	m_finalResult = m_outputLayer.GetSumOfNeuronWeights();
 }
