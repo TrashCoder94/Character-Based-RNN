@@ -2,7 +2,14 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+
+#define RNN_ATTEMPT 0
+
+#if RNN_ATTEMPT
 #include "RecurrentNeuralNetwork.h"
+#else
+#include "NeuralNetworks/NeuralNetwork.h"
+#endif
 
 namespace fs = std::filesystem;
 
@@ -29,11 +36,24 @@ int main(int argc, char** argv)
 	const fs::path inputFilepath{ inputFilepathString };
 	const fs::path outputFilepath{ outputFilepathString };
 
+#if RNN_ATTEMPT
 	// Create some data to train our neural network with
 	RecurrentNeuralNetwork rnn{ inputFilepath, outputFilepath };
 	rnn.ReadFile(inputFilepath);
 	rnn.CreateDictionary();
 	rnn.Process();
+#else
+	const size_t numberOfInputNeurons{ 5 };
+	const size_t numberOfHiddenNeurons{ 5 };
+	const size_t numberOfHiddenLayers{ 3 };
+	const size_t numberOfOutputNeurons{ 5 };
+
+	NeuralNetwork nn{ numberOfInputNeurons, numberOfHiddenNeurons, numberOfHiddenLayers, numberOfOutputNeurons };
+	nn.Init();
+	nn.Process();
+	nn.Print();
+
+#endif
 
 	return 0;
 }
