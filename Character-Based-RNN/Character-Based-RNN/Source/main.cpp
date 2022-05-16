@@ -43,15 +43,16 @@ int main(int argc, char** argv)
 	rnn.CreateDictionary();
 	rnn.Process();
 #else
-	const size_t numberOfInputNeurons{ 5 };
-	const size_t numberOfHiddenNeurons{ 5 };
-	const size_t numberOfHiddenLayers{ 3 };
-	const size_t numberOfOutputNeurons{ 5 };
+	const size_t numberOfInputNeurons{ 2 };
+	const size_t numberOfHiddenNeurons{ 2 };
+	const size_t numberOfHiddenLayers{ 1 };
+	const size_t numberOfOutputNeurons{ 1 };
+	const std::vector<float> inputTest{ 2.0f, 3.0f };
 
 	NeuralNetwork nn{ numberOfInputNeurons, numberOfHiddenNeurons, numberOfHiddenLayers, numberOfOutputNeurons };
 	nn.Init();
-	nn.Process();
-	nn.Print();
+	const float nnFeedForward = nn.FeedForward(inputTest);
+	std::cout << "NN Feed Forward = " << nnFeedForward << std::endl;
 
 #endif
 

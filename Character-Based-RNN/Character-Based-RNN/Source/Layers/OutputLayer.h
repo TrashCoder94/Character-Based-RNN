@@ -13,5 +13,4 @@ class OutputLayer : public Layer
 
 	private:
 		std::vector<float> m_weightsIn;
-		std::vector<float> m_weightsOut;
 };

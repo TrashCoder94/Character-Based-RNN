@@ -4,6 +4,7 @@ Layer::Layer() : Layer(3)
 {}
 
 Layer::Layer(const size_t numberOfNeurons) :
+	m_weights{},
 	m_neurons{},
 	m_numberOfNeurons{ numberOfNeurons }
 {
@@ -12,6 +13,7 @@ Layer::Layer(const size_t numberOfNeurons) :
 
 Layer::~Layer()
 {
+	m_weights.clear();
 	m_neurons.clear();
 }
 
@@ -38,10 +40,10 @@ const void Layer::PrintLayer() const
 	std::cout << "==============" << std::endl;
 }
 
-const float Layer::GetSumOfNeuronWeights() const
+const float Layer::FeedForward(const std::vector<float> inputs) const
 {
 	float sumOfNeurons{ 0.0f };
 	for (const Neuron& neuron : m_neurons)
-		sumOfNeurons += neuron.GetSum();
+		sumOfNeurons += neuron.FeedForward(inputs);
 	return sumOfNeurons;
 }

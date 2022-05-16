@@ -12,7 +12,7 @@ class NeuralNetwork
 		~NeuralNetwork();
 
 		void Init();
-		void Process();
+		const float FeedForward(std::vector<float> inputs) const;
 		void Print();
 
 	private:
@@ -20,7 +20,7 @@ class NeuralNetwork
 		std::vector<HiddenLayer> m_hiddenLayers;
 		OutputLayer m_outputLayer;
 
-		float m_finalResult;
+		std::vector<float> m_inputWeights;
 
 		size_t m_numberOfHiddenNeurons;
 		size_t m_numberOfHiddenLayers;
