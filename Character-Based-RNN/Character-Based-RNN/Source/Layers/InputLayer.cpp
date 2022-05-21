@@ -13,7 +13,7 @@ void InputLayer::InitLayer()
 {	
 	for (size_t iN = 0; iN < GetNumberOfNeurons(); ++iN)
 	{
-		Neuron neuron{ GetWeights() };
+		Neuron neuron{ std::vector<float>(), GetWeights() };
 		const float newWeight = neuron.Init();
 		AddWeight(newWeight);
 		AddNeuron(neuron);

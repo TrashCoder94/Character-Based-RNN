@@ -8,20 +8,21 @@ class NeuralNetwork
 {
 	public:
 		NeuralNetwork();
-		explicit NeuralNetwork(const size_t numberOfInputNeurons, const size_t numberOfHiddenNeurons, const size_t numberOfHiddenLayers, const size_t numberOfOutputNeurons);
+		explicit NeuralNetwork(const std::vector<float> input, const size_t numberOfInputNeurons, const size_t numberOfHiddenNeurons, const size_t numberOfOutputNeurons);
 		~NeuralNetwork();
 
 		void Init();
-		const float FeedForward(std::vector<float> inputs) const;
+		const float FeedForward(const std::vector<float> inputs) const;
+		const std::vector<float> Recurrent(const std::vector<float> inputs, size_t iterations = 1) const;
 		void Print();
 
 	private:
 		InputLayer m_inputLayer;
-		std::vector<HiddenLayer> m_hiddenLayers;
+		HiddenLayer m_hiddenLayer;
 		OutputLayer m_outputLayer;
 
+		std::vector<float> m_inputValues;
 		std::vector<float> m_inputWeights;
 
 		size_t m_numberOfHiddenNeurons;
-		size_t m_numberOfHiddenLayers;
 };

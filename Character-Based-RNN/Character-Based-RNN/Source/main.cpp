@@ -45,15 +45,19 @@ int main(int argc, char** argv)
 #else
 	const size_t numberOfInputNeurons{ 2 };
 	const size_t numberOfHiddenNeurons{ 2 };
-	const size_t numberOfHiddenLayers{ 1 };
 	const size_t numberOfOutputNeurons{ 1 };
+	const size_t numberOfRecurrentIterations{ 3 };
 	const std::vector<float> inputTest{ 2.0f, 3.0f };
 
-	NeuralNetwork nn{ numberOfInputNeurons, numberOfHiddenNeurons, numberOfHiddenLayers, numberOfOutputNeurons };
+	NeuralNetwork nn{ inputTest, numberOfInputNeurons, numberOfHiddenNeurons, numberOfOutputNeurons };
 	nn.Init();
-	const float nnFeedForward = nn.FeedForward(inputTest);
-	std::cout << "NN Feed Forward = " << nnFeedForward << std::endl;
+	//const float nnFeedForward = nn.FeedForward(inputTest);
+	//std::cout << "NN Feed Forward = " << nnFeedForward << std::endl;
 
+	std::cout << "NN Recurrent" << std::endl;
+	const std::vector<float> nnRecurrent = nn.Recurrent(inputTest, numberOfRecurrentIterations);
+	for (size_t iR = 0; iR < nnRecurrent.size(); ++iR)
+		std::cout << "Recurrent Value #" << iR << " = " << nnRecurrent[iR] << std::endl;
 #endif
 
 	return 0;

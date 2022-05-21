@@ -1,50 +1,47 @@
 #include "NeuralNetwork.h"
 
-NeuralNetwork::NeuralNetwork() : NeuralNetwork(5, 5, 3, 1)
+NeuralNetwork::NeuralNetwork() : NeuralNetwork({2.0f, 3.0f}, 2, 2, 1)
 {}
 
-NeuralNetwork::NeuralNetwork(const size_t numberOfInputNeurons, const size_t numberOfHiddenNeurons, const size_t numberOfHiddenLayers, const size_t numberOfOutputNeurons) :
+NeuralNetwork::NeuralNetwork(const std::vector<float> input, const size_t numberOfInputNeurons, const size_t numberOfHiddenNeurons, const size_t numberOfOutputNeurons) :
 	m_inputLayer{ numberOfInputNeurons },
-	m_hiddenLayers{},
-	m_outputLayer{ numberOfOutputNeurons, {} },
+	m_hiddenLayer{ numberOfHiddenNeurons, {}, {} },
+	m_outputLayer{ numberOfOutputNeurons, {}, {} },
+	m_inputValues{ input },
 	m_inputWeights{},
-	m_numberOfHiddenNeurons{ numberOfHiddenNeurons },
-	m_numberOfHiddenLayers{ numberOfHiddenLayers }
+	m_numberOfHiddenNeurons{ numberOfHiddenNeurons }
 {}
 
 NeuralNetwork::~NeuralNetwork()
-{}
+{
+	m_inputValues.clear();
+	m_inputWeights.clear();
+}
 
 void NeuralNetwork::Init()
 {
 	//
 	// INPUT LAYER
 	//
-
 	m_inputLayer.InitLayer();
 	m_inputWeights = m_inputLayer.GetWeights();
 
-	// 
+	//
 	// HIDDEN LAYER
 	//
+	m_hiddenLayer = HiddenLayer{ m_numberOfHiddenNeurons, m_inputValues, m_inputWeights };
+	m_hiddenLayer.InitLayer();
 
-	std::vector<float> previousHiddenLayerWeights{ m_inputWeights };
-	for (size_t iH = 0; iH < m_numberOfHiddenLayers; ++iH)
-	{
-		HiddenLayer hiddenLayer{ m_numberOfHiddenNeurons, previousHiddenLayerWeights };
-		hiddenLayer.InitLayer();
-		m_hiddenLayers.push_back(hiddenLayer);
-		if(m_numberOfHiddenLayers > 1)
-			previousHiddenLayerWeights = m_hiddenLayers[iH - 1].GetWeights();
-	}
-
+	//
 	// OUTPUT LAYER
-	m_outputLayer = OutputLayer(1, previousHiddenLayerWeights);
+	//
+	m_outputLayer = OutputLayer{ 1, m_inputValues, m_inputWeights };
 	m_outputLayer.InitLayer();
 }
 
 const float NeuralNetwork::FeedForward(std::vector<float> inputs) const
 {
+#if 0
 	std::vector<float> feedForwardResults(m_numberOfHiddenLayers, 0.0f);
 	for (const HiddenLayer& hiddenLayer : m_hiddenLayers)
 	{
@@ -54,6 +51,20 @@ const float NeuralNetwork::FeedForward(std::vector<float> inputs) const
 
 	const float feedForwardFinalResult = m_outputLayer.FeedForward(feedForwardResults);
 	return feedForwardFinalResult;
+#endif
+
+	return 0.0f;
+}
+
+const std::vector<float> NeuralNetwork::Recurrent(const std::vector<float> inputs, size_t iterations /*= 1*/) const
+{
+	std::vector<float> recurrent{};
+
+	for (size_t iH = 0; iH < iterations; ++iH)
+		recurrent = m_hiddenLayer.Recurrent(inputs);
+
+	const std::vector<float>& finalRecurrentOutput = m_outputLayer.Recurrent(recurrent);
+	return finalRecurrentOutput;
 }
 
 void NeuralNetwork::Print()
@@ -69,21 +80,13 @@ void NeuralNetwork::Print()
 	std::cout << "==============" << std::endl;
 
 	std::cout << "==============" << std::endl;
-	std::cout << "HIDDEN LAYERS" << std::endl;
+	std::cout << "HIDDEN LAYER" << std::endl;
 	std::cout << "==============" << std::endl;
 
-	for (size_t iH = 0; iH < m_numberOfHiddenLayers; ++iH)
-	{
-		std::cout << "--------------" << std::endl;
-		std::cout << "Hidden Layer #" << iH << std::endl;
-
-		m_hiddenLayers[iH].PrintLayer();
-		
-		std::cout << "--------------" << std::endl;
-	}
+	m_hiddenLayer.PrintLayer();
 
 	std::cout << "==============" << std::endl;
-	std::cout << "END OF HIDDEN LAYERS" << std::endl;
+	std::cout << "END OF HIDDEN LAYER" << std::endl;
 	std::cout << "==============" << std::endl;
 
 	std::cout << "==============" << std::endl;

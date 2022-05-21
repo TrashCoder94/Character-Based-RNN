@@ -47,3 +47,11 @@ const float Layer::FeedForward(const std::vector<float> inputs) const
 		sumOfNeurons += neuron.FeedForward(inputs);
 	return sumOfNeurons;
 }
+
+const std::vector<float> Layer::Recurrent(const std::vector<float> inputs) const
+{
+	std::vector<float> recurrent{};
+	for (const Neuron& neuron : m_neurons)
+		recurrent = neuron.Recurrent(inputs);
+	return recurrent;
+}
