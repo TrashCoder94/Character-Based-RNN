@@ -141,23 +141,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Layers\HiddenLayer.cpp" />
-    <ClCompile Include="Source\Layers\InputLayer.cpp" />
-    <ClCompile Include="Source\Layers\Layer.cpp" />
-    <ClCompile Include="Source\Layers\OutputLayer.cpp" />
     <ClCompile Include="Source\main.cpp" />
-    <ClCompile Include="Source\NeuralNetworks\NeuralNetwork.cpp" />
-    <ClCompile Include="Source\Neurons\Neuron.cpp" />
-    <ClCompile Include="Source\RecurrentNeuralNetwork.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Source\Layers\HiddenLayer.h" />
-    <ClInclude Include="Source\Layers\InputLayer.h" />
-    <ClInclude Include="Source\Layers\Layer.h" />
-    <ClInclude Include="Source\Layers\OutputLayer.h" />
-    <ClInclude Include="Source\NeuralNetworks\NeuralNetwork.h" />
-    <ClInclude Include="Source\Neurons\Neuron.h" />
-    <ClInclude Include="Source\RecurrentNeuralNetwork.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
