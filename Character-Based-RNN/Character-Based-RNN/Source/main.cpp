@@ -1,5 +1,5 @@
 // Super messy conversion of https://gist.github.com/karpathy/d4dee566867f8291f086 from python to C++!
-#define DEBUG_SAMPLE_TEXT 0
+#define DEBUG_SAMPLE_TEXT 1
 
 #include <array>
 #include <atomic>
@@ -29,9 +29,9 @@ std::map<char, int> IDToChar{};
 size_t vocabSize{ 0 };
 
 const size_t hiddenSize{ 100 };
-size_t sequenceLength{ 25 };
+size_t sequenceLength{ 10 };
 float learningRate{ 0.1f };
-size_t numberOfIterationsToSample{ 1000 };
+size_t numberOfIterationsToSample{ 100 };
 
 std::vector<std::vector<float>> weightsInputToHidden{};
 std::vector<std::vector<float>> weightsHiddenToHidden{};
@@ -192,7 +192,7 @@ void Loss(std::vector<int> inputs, std::vector<int> targets, std::vector<std::ve
 			for (size_t j = 0; j < weightsVector.size(); ++j)
 			{
 				const float weight = weightsVector[j];
-				const float hiddenState = hs[iN][0];
+				const float hiddenState = hs[iN][j];
 				const float dot = weight * hiddenState;
 				hiddenToOutputDotValues.push_back(dot);
 			}
@@ -229,11 +229,12 @@ void Loss(std::vector<int> inputs, std::vector<int> targets, std::vector<std::ve
 		{
 			const float expValue{ outputExpValues[i] };
 			const float probabilityValue{ expValue / sumOfOutputExpValues };
+			probabilities.push_back(probabilityValue);
 		}
 		ps[iN] = ((probabilities.size() == 0) ? std::vector<float>{ 1.0f } : probabilities);
 
 		// loss += -np.log(ps[t][targets[t],0]) # softmax (cross-entropy loss)
-		float psValue{ ps[iN][0] };
+		float psValue{ ps[iN][targets[iN]] };
 		loss += -std::log(psValue);
 	}
 
@@ -321,14 +322,14 @@ void Loss(std::vector<int> inputs, std::vector<int> targets, std::vector<std::ve
 		}
 
 		// dy[targets[t]] -= 1 # backprop into y.see http ://cs231n.github.io/neural-networks-case-study/#grad if confused here
-		dy[0] -= 1.0f;
+		dy[targets[i]] -= 1.0f;
 
 		// dWhy += np.dot(dy, hs[t].T)
 		std::vector<float> deltaDotHiddenToOuputVector{};
-		for (size_t j = 0; j < dy.size(); ++j)
+		for (size_t j = 0; j < hsTransposed.size(); ++j)
 		{
 			const float dyValue{ dy[j] };
-			const float hiddenStateTransposed{ hsTransposed[i][j] };
+			const float hiddenStateTransposed{ hsTransposed[j][i] };
 			const float dotValue{ dyValue * hiddenStateTransposed };
 			deltaDotHiddenToOuputVector.push_back(dotValue);
 		}
@@ -354,7 +355,7 @@ void Loss(std::vector<int> inputs, std::vector<int> targets, std::vector<std::ve
 		for (size_t j = 0; j < whyTransposed.size(); ++j)
 		{
 			const float whyTransposedValue{ whyTransposed[j][i] };
-			const float dyValue{ dy[0] };
+			const float dyValue{ dy[j] };
 			const float dotDhValue{ whyTransposedValue * dyValue + dhnext[j] };
 			dh.push_back(dotDhValue);
 		}
@@ -573,7 +574,7 @@ void Sample(std::vector<std::vector<float>>& h, int& seed_ix, const size_t numbe
 			for (size_t k = 0; k < vec.size(); ++k)
 			{
 				const float whyValue{ vec[k] };
-				const float yValue{ (whyValue * h[k][0]) + byVec[0] };
+				const float yValue{ (whyValue * h[k][j]) + byVec[0] };
 				yVec.push_back(yValue);
 			}
 			y.push_back(yVec);
@@ -677,7 +678,7 @@ int main(int argc, char** argv)
 
 	const fs::path exeFilepath{ argv[0] };
 	//const std::string inputFilepathString{ exeFilepath.parent_path().string() + "\\..\\Assets\\input.txt" };
-	const std::string inputFilepathString{ exeFilepath.parent_path().string() + "\\..\\Assets\\shakespeare.txt" };
+	const std::string inputFilepathString{ exeFilepath.parent_path().string() + "\\..\\Assets\\alphabet.txt" };
 	const std::string outputFilepathString{ exeFilepath.parent_path().string() + "\\..\\Assets\\output.txt" };
 	const fs::path inputFilepath{ inputFilepathString };
 	const fs::path outputFilepath{ outputFilepathString };
@@ -758,10 +759,10 @@ int main(int argc, char** argv)
 	mbh, mby = np.zeros_like(bh), np.zeros_like(by) # memory variables for Adagrad
 	smooth_loss = -np.log(1.0/vocab_size)*seq_length # loss at iteration 0
 	*/
-	size_t epochs{ 100000 };
+	size_t epochs{ 5000 };
 	size_t n{ 0 };
 	size_t p{ 0 };
-	size_t numberOfSamples{ 3 };
+	size_t numberOfSamples{ 30 };
 	std::vector<std::vector<float>> mWxh{};
 	std::vector<std::vector<float>> mWhh{};
 	std::vector<std::vector<float>> mWhy{};
@@ -874,7 +875,7 @@ int main(int argc, char** argv)
 			if (n > 0 && n % numberOfIterationsToSample == 0)
 			{
 				std::vector<int> sampleIDs{};
-				Sample(hPrev, inputs[0], 200, sampleIDs);
+				Sample(hPrev, inputs[0], numberOfSamples, sampleIDs);
 
 				std::string sampleString{};
 #if DEBUG_SAMPLE_TEXT
@@ -891,7 +892,7 @@ int main(int argc, char** argv)
 				{
 					int sampleIndex{ sampleIDs[iS] };
 					const char character = IDToChar.at(sampleIndex);
-					std::cout << "----\n" << character << "\n----" << std::endl;
+					//std::cout << "----\n" << character << "\n----" << std::endl;
 					sampleString += character;
 				}
 #if DEBUG_SAMPLE_TEXT
@@ -899,11 +900,11 @@ int main(int argc, char** argv)
 				sampleString += ("===============");
 #endif
 
-				outputFile << sampleString + "\n";
+				//outputFile << sampleString + "\n";
 
 				auto end = std::chrono::steady_clock::now();
 				std::chrono::duration<double> elapsed_seconds = end - start;
-				std::cout << "RNN took " << elapsed_seconds.count() << "s to sample input text file" << std::endl;
+				//std::cout << "RNN took " << elapsed_seconds.count() << "s to sample input text file" << std::endl;
 				start = std::chrono::steady_clock::now();
 			}
 
@@ -969,6 +970,7 @@ int main(int argc, char** argv)
 			if (n > 0 && n % epochs == 0)
 			{
 				run.store(false);
+				break;
 			}
 		}
 
@@ -977,6 +979,199 @@ int main(int argc, char** argv)
 
 	run.store(false);
 	asyncInputThread.join();
+
+	auto Predict = [&, outputFilepath](const char character, const size_t numberOfCharactersToPredict)
+	{
+		std::ofstream predictOutputFile{ outputFilepath };
+		if (predictOutputFile.is_open())
+		{
+			predictOutputFile.clear();
+
+			/*
+			txt = ''.join(int_to_char[i] for i in ixes)
+			print ('----\n %s \n----' % (txt, ))
+			*/
+			// x = np.zeros((num_chars, 1)) 
+			std::vector<std::vector<float>> x{};
+			for (size_t i = 0; i < vocabSize; ++i)
+			{
+				std::vector<float> vec{};
+				vec.push_back(0.0f);
+				x.push_back(vec);
+			}
+
+			/*
+			x[char_to_int[test_char]] = 1
+			ixes = []
+			h = np.zeros((hidden_size,1))
+			*/
+			int testCharacterID = charToID.at(character);
+			x[testCharacterID][0] = 1.0f;
+			std::vector<int> ids{};
+			std::vector<std::vector<float>> h{};
+			for (size_t i = 0; i < hiddenSize; ++i)
+			{
+				std::vector<float> vec{};
+				vec.push_back(0.0f);
+				h.push_back(vec);
+			}
+
+			/*
+				p = np.exp(y) / np.sum(np.exp(y))
+				ix = np.random.choice(range(num_chars), p=p.ravel()) # ravel -> rank0
+				# "ix" is a list of indexes selected according to the soft max probability.
+				x = np.zeros((num_chars, 1)) # init
+				x[ix] = 1
+				ixes.append(ix) # list
+			*/
+			for (size_t i = 0; i < numberOfCharactersToPredict; ++i)
+			{
+				// h = np.tanh(np.dot(Wxh, x) + np.dot(Whh, h) + bh)
+				std::vector<std::vector<float>> dotWxh{};
+				for (size_t j = 0; j < weightsInputToHidden.size(); ++j)
+				{
+					std::vector<float> dotVec{};
+					std::vector<float> vec{ weightsInputToHidden[j] };
+					for (size_t k = 0; k < vec.size(); ++k)
+					{
+						const float wxhValue{ vec[k] };
+						const float xValue{ x[k][0] };
+						const float dotValue{ wxhValue * xValue };
+						dotVec.push_back(dotValue);
+					}
+					dotWxh.push_back(dotVec);
+				}
+				std::vector<std::vector<float>> dotWhh{};
+				for (size_t j = 0; j < weightsHiddenToHidden.size(); ++j)
+				{
+					std::vector<float> dotVec{};
+					std::vector<float> vec{ weightsHiddenToHidden[j] };
+					for (size_t k = 0; k < vec.size(); ++k)
+					{
+						const float whhValue{ vec[k] };
+						const float hValue{ h[k][0] };
+						const float dotValue{ whhValue * hValue };
+						dotVec.push_back(dotValue);
+					}
+					dotWhh.push_back(dotVec);
+				}
+				std::vector<std::vector<float>> tanhValues{};
+				for (size_t j = 0; j < dotWxh.size(); ++j)
+				{
+					std::vector<float> dotWxhVec{ dotWxh[j] };
+					std::vector<float> dotWhhVec{ dotWhh[j] };
+					std::vector<float> tanhVec{};
+					for (size_t k = 0; k < dotWxhVec.size(); ++k)
+					{
+						const float dotWxhVecValue{ dotWxhVec[k] };
+						const float dotWhhVecValue{ dotWhhVec[k] };
+						const float tanhValue{ std::tanh((dotWxhVecValue * x[k][0]) + (dotWhhVecValue * h[k][0]) + hiddenBiases[k][0]) };
+						tanhVec.push_back(tanhValue);
+					}
+					tanhValues.push_back(tanhVec);
+				}
+				h = tanhValues;
+
+				std::vector<std::vector<float>> y{};
+				for (size_t j = 0; j < weightsHiddenToOutput.size(); ++j)
+				{
+					std::vector<float> vec{ weightsHiddenToOutput[j] };
+					std::vector<float> hVec{ h[j] };
+					std::vector<float> byVec{ outputBiases[j] };
+					std::vector<float> yVec{};
+
+					for (size_t k = 0; k < vec.size(); ++k)
+					{
+						const float whyValue{ vec[k] };
+						const float yValue{ (whyValue * h[k][j]) + byVec[0] };
+						yVec.push_back(yValue);
+					}
+					y.push_back(yVec);
+				}
+
+				std::vector<float> pRavel{};
+				std::vector<std::vector<float>> p{};
+				std::vector<std::vector<float>> yExp{};
+				std::vector<float> yExpSum{};
+				for (size_t j = 0; j < y.size(); ++j)
+				{
+					std::vector<float> yVec{ y[j] };
+					std::vector<float> yExpVec{};
+					float yExpTotal{ 0.0f };
+					for (size_t k = 0; k < yVec.size(); ++k)
+					{
+						const float yExpValue{ std::exp(yVec[k]) };
+						yExpTotal += yExpValue;
+						yExpVec.push_back(yExpValue);
+					}
+					yExpSum.push_back(yExpTotal);
+					yExp.push_back(yExpVec);
+				}
+				for (size_t j = 0; j < yExp.size(); ++j)
+				{
+					std::vector<float> pVec{};
+					std::vector<float> yExpVec{ yExp[j] };
+					float yExpTotal{ yExpSum[j] };
+					for (size_t k = 0; k < yExpVec.size(); ++k)
+					{
+						//p = np.exp(y) / np.sum(np.exp(y))
+						const float yExpValue{ yExpVec[k] };
+						const float y{ yExpValue / yExpTotal };
+						pVec.push_back(y);
+						pRavel.push_back(y);
+					}
+					p.push_back(pVec);
+				}
+
+				// ix = np.random.choice(range(vocab_size), p = p.ravel())
+			// random int from 0 to vocabSize from p.size()
+				std::vector<float> randomValues{};
+				for (size_t j = 0; j < pRavel.size(); ++j)
+				{
+					// random values from 0 to vocab size
+					std::uniform_real_distribution<float> dis(0.0f, (float)vocabSize);
+					const float randomValue{ dis(gen) };
+					randomValues.push_back(randomValue);
+				}
+				std::uniform_real_distribution<float> dis(0.0f, (float)randomValues.size());
+				float randomIndexFloat{ dis(gen) };
+				int randomIndex{ (int)randomIndexFloat };
+				float selectedRandomValue{ randomValues[randomIndex] };
+				int ix{ (int)selectedRandomValue };
+
+				// x = np.zeros((vocab_size, 1))
+				for (size_t j = 0; j < vocabSize; ++j)
+				{
+					std::vector<float> vec{};
+					vec.push_back(0.0f);
+					x[j] = vec;
+				}
+
+				// x[ix] = 1
+				for (size_t j = 0; j < x[ix].size(); ++j)
+				{
+					x[ix][j] = 1.0f;
+				}
+
+				ids.push_back(ix);
+			}
+
+			std::string sampleString{};
+			for (size_t iS = 0; iS < ids.size(); ++iS)
+			{
+				int sampleIndex{ ids[iS] };
+				const char character = IDToChar.at(sampleIndex);
+				std::cout << "----\n" << character << "\n----" << std::endl;
+				sampleString += character;
+			}
+
+			predictOutputFile << sampleString + "\n";
+		}
+
+		predictOutputFile.close();
+	};
+	Predict('a', 30);
+	Predict('b', 30);
 
 	return 0;
 }
