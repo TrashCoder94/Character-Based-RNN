@@ -150,6 +150,10 @@
     <ClInclude Include="Source\Core.h" />
     <ClInclude Include="Source\Utilities.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\python-example.py" />
+    <None Include="Source\python-sandbox.py" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

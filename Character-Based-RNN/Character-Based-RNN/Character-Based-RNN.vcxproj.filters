@@ -36,4 +36,8 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\python-example.py" />
+    <None Include="Source\python-sandbox.py" />
+  </ItemGroup>
 </Project>
